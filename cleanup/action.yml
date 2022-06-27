@@ -1,3 +1,4 @@
+---
 name: 'Clean workspace'
 description: 'Clean workspace directory after previous workflow run'
 runs:
