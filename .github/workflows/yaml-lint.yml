@@ -1,0 +1,20 @@
+name: YAML lint
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: YAML Lint and Annotate
+        uses: Staffbase/yamllint-action@v1.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target-path: setup-venv
