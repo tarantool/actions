@@ -1,0 +1,31 @@
+---
+name: 'Setup Python virtual environment'
+description: 'Install virtualenv and Python modules from requirements file'
+inputs:
+  venv-dir:
+    description: 'Virtualenv directory name'
+    required: true
+    default: 'venv'
+  requirements:
+    description: 'Path to requirements file'
+    required: true
+    default: requirements.txt
+runs:
+  using: "composite"
+  steps:
+    # Install virtualenv for current user
+    - shell: bash
+      run: |
+        if [ -z ~/.local/bin/virtualenv ]; then \
+          pip install --no-input --disable-pip-version-check --user virtualenv; \
+        fi
+
+    # Setup Python environment
+    - shell: bash
+      run: |
+        ~/.local/bin/virtualenv ${{ inputs.venv-dir }} && \
+        source ./${{ inputs.venv-dir }}/bin/activate && \
+        which python && \
+        python --version && \
+        pip install --no-input --disable-pip-version-check \
+        -r ${{ inputs.requirements }}
