@@ -67,7 +67,7 @@ runs:
         await github.rest.pulls.create({
           owner: '${{ inputs.owner }}',
           repo: '${{ inputs.parent_repository }}'.split('/')[1].trim(),
-          head: "${{ inputs.parent_updated_branch }}${{ inputs.branch }}",
+          head: "${{ inputs.parent_updated_branch }}-${{ inputs.branch }}",
           base: '${{ inputs.pr_against_branch }}',
           title: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
           body: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
