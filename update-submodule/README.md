@@ -2,6 +2,14 @@
 
 This GitHub action creates a new branch and pull request against the parent repository when submodules are updated.
 
+## Notice
+ - This action doesn't create another PR for all merges, commits for on branch, all updates in one PR
+ - Name of commit and title and body of PR have same text and can be set by variable TEXT_PULL_REQUEST
+ - variable owner can be set as organization
+ - branch name for updating can be set in variable PARENT_UPDATED_BRANCH
+ - parrent repoitory can be set by secret - ***PARENT_REPOSITORY: '${{ secret.PARENT_REPO }}***
+
+Example workflow:
 
 ```yml
 
@@ -13,7 +21,6 @@ on:
     branches: 
     - master
     - main
-    - "2.10"
 
 jobs:
   build:
@@ -23,10 +30,9 @@ jobs:
       PARENT_REPOSITORY: 'org/repo'
       CHECKOUT_BRANCH: 'main'
       PR_AGAINST_BRANCH: 'main'
-      PARENT_UPDATED_BRANCH: 'branch-for-update-'
+      PARENT_UPDATED_BRANCH: 'branch-for-update'
       TEXT_PULL_REQUEST: 'Submodule updated time for renew'
       OWNER: 'owner'
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 
     steps:
       - name: Checkout Code
@@ -34,7 +40,7 @@ jobs:
 
       - name: run action
         id: run_action
-        uses: tarantool/action/update-submodule@master
+        uses: tarantool/actions/update-submodule@master
         with:
           github_token: ${{ secrets.RELEASE_HUB_SECRET }}
           parent_repository: ${{ env.PARENT_REPOSITORY }}
@@ -43,6 +49,7 @@ jobs:
           parent_updated_branch: ${{ env.PARENT_UPDATED_BRANCH }}
           text_pull_request: ${{ env.TEXT_PULL_REQUEST }}
           owner: ${{ env.OWNER }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: ${{ github.head_ref || github.ref_name }}
+          current_repo: "${{ github.repository }}"
 
 ```
