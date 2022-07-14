@@ -1,0 +1,73 @@
+name: 'GitHub Action Submodule Updates'
+description: 'Update submodule and creates new pull request against parent repository'
+author: 'foxzi'
+
+branding:
+  icon: 'git-pull-request'
+
+inputs:
+  github_token:
+    description: 'Github Token'
+    required: true
+  checkout_branch:
+    description: 'Branch to checkout'
+    required: false
+    default: 'master'
+  pr_against_branch:
+    description: 'Parent branch'
+    required: true
+  parent_repository:
+    description: 'Parent Repository'
+    required: true
+  parent_updated_branch:
+    description: 'Name for updating branch'
+    required: false
+    default: 'submodule_updates'
+  text_pull_request:
+    description: 'Text title of pull request'
+    required: false
+    default: 'Submodule updates'
+  owner:
+    description: 'Owner'
+    required: true
+  branch:
+    description: 'Current branch'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Checkout parent repository and branch
+    uses: actions/checkout@v2
+    with:
+      token: ${{ inputs.github_token }}
+      repository: ${{ inputs.parent_repository }}
+      ref: ${{ inputs.checkout_branch }}
+      submodules: true
+      fetch-depth: 0
+
+  - name: Create new branch and push changes
+    shell: bash
+    run: |
+      echo "Current branch ${{ inputs.branch }}"
+      git config user.name github-actions
+      git config user.email github-actions@github.com
+      git submodule update --remote
+      git checkout -b "${{ inputs.parent_updated_branch }}${{ inputs.branch }}"
+      git commit -am "updating submodules"
+      git push --set-upstream --force origin "${{ inputs.parent_updated_branch }}${{ inputs.branch }}"
+
+  - name: Create pull request against target branch
+    uses: actions/github-script@v5
+    with:
+      github-token: ${{ inputs.github_token }}
+      script: |
+        await github.rest.pulls.create({
+          owner: '${{ inputs.owner }}',
+          repo: '${{ inputs.parent_repository }}'.split('/')[1].trim(),
+          head: "${{ inputs.parent_updated_branch }}${{ inputs.branch }}",
+          base: '${{ inputs.pr_against_branch }}',
+          title: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.parent_repository }}@${{ inputs.branch }}',
+          body: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.parent_repository }}@${{ inputs.branch }}',
+        });
+    continue-on-error: true
