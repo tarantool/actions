@@ -33,6 +33,9 @@ inputs:
   branch:
     description: 'Current branch'
     required: true
+  current_repo:
+    description: 'Current repository'
+    required: true
 
 runs:
   using: 'composite'
@@ -49,13 +52,12 @@ runs:
   - name: Create new branch and push changes
     shell: bash
     run: |
-      echo "Current branch ${{ inputs.branch }}"
       git config user.name github-actions
       git config user.email github-actions@github.com
       git submodule update --remote
-      git checkout -b "${{ inputs.parent_updated_branch }}${{ inputs.branch }}"
+      git checkout -b "${{ inputs.parent_updated_branch }}-${{ inputs.branch }}"
       git commit -am "updating submodules"
-      git push --set-upstream --force origin "${{ inputs.parent_updated_branch }}${{ inputs.branch }}"
+      git push --set-upstream --force origin "${{ inputs.parent_updated_branch }}-${{ inputs.branch }}"
 
   - name: Create pull request against target branch
     uses: actions/github-script@v5
@@ -67,7 +69,7 @@ runs:
           repo: '${{ inputs.parent_repository }}'.split('/')[1].trim(),
           head: "${{ inputs.parent_updated_branch }}${{ inputs.branch }}",
           base: '${{ inputs.pr_against_branch }}',
-          title: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.parent_repository }}@${{ inputs.branch }}',
-          body: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.parent_repository }}@${{ inputs.branch }}',
+          title: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
+          body: '[Auto-generated] ${{ inputs.text_pull_request }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
         });
     continue-on-error: true

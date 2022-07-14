@@ -38,7 +38,7 @@ jobs:
         with:
           github_token: ${{ secrets.RELEASE_HUB_SECRET }}
           parent_repository: ${{ env.PARENT_REPOSITORY }}
-          checkout_branch: ${{ env.CHECKOUT_BRANCH}}
+          checkout_branch: ${{ env.CHECKOUT_BRANCH }}
           pr_against_branch: ${{ env.PR_AGAINST_BRANCH }}
           parent_updated_branch: ${{ env.PARENT_UPDATED_BRANCH }}
           text_pull_request: ${{ env.TEXT_PULL_REQUEST }}
