@@ -2,13 +2,17 @@
 
 This action updates a submodule of the parent repository in a feature branch and opens a pull request against the main branch.
 
-## Notice
- - This action doesn't create another PR for all merges, commits for on branch, all updates in one PR
- - Name of commit and title and body of PR have same text and can be set by variable TEXT_PULL_REQUEST
- - variable owner can be set as organization
- - branch name for updating can be set in variable PARENT_BRANCH_FOR_BRANCH
- - parrent repoitory can be set by secret - ***PARENT_REPOSITORY: '${{ secret.PARENT_REPO }}***
- - variable PARENT_REPO_TOKEN is token with permisson to
+If there is an open PR already, the action will just update and force-push the branch.
+
+## Variables
+
+- `parent_repository` — full name of the repository which has the submodule: `<owner>/<repo>`.
+- `owner` — owner of the parent repository.
+- `checkout_branch` — the base branch in the parent repository.
+- `parent_branch_for_update` — base name for new branches, opened from the base branch in the parent repository.
+- `pr_against_branch` is the branch to open PR against; usually the same as `CHECKOUT_BRANCH`.
+- `pull_request_text` is used as the commit message, PR title, and PR body.
+- `github_token` — GitHub token of a user with `write` permissions in the target (parent) repository. Provide this token as an action secret.
 
 Example workflow:
 
