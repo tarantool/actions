@@ -1,0 +1,82 @@
+name: 'Creates Pull Request when Submodules are Updated'
+description: 'This action updates a submodule of the parent repository in a feature branch and opens a pull request against the main branch.'
+author: 'foxzi'
+
+branding:
+  icon: 'git-pull-request'
+  color: 'green'
+
+inputs:
+  github_token:
+    description: 'Github Token'
+    required: true
+  checkout_branch:
+    description: 'Branch to checkout'
+    required: false
+    default: 'master'
+  pr_against_branch:
+    description: 'Parent branch'
+    required: true
+  parent_repository:
+    description: 'Parent Repository'
+    required: true
+  parent_branch_for_update:
+    description: 'Name for updating branch'
+    required: false
+    default: 'submodule_updates'
+  pull_request_text:
+    description: 'Text title of pull request'
+    required: false
+    default: 'Submodule updates'
+  owner:
+    description: 'Owner'
+    required: true
+  branch:
+    description: 'Current branch'
+    required: true
+  current_repo:
+    description: 'Current repository'
+    required: true
+  user_name:
+    description: "User name for commits"
+    default: "TarantoolBot"
+  user_email:
+    description: "Email for commits"
+    default: "bot@tarantool.io"
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Checkout parent repository and branch
+    uses: actions/checkout@v2
+    with:
+      token: ${{ inputs.github_token }}
+      repository: ${{ inputs.parent_repository }}
+      ref: ${{ inputs.checkout_branch }}
+      submodules: true
+      fetch-depth: 0
+
+  - name: Create new branch and push changes
+    shell: bash
+    run: |
+      git config user.name ${{ inputs.user_name }}
+      git config user.email ${{ inputs.user_email }}
+      git submodule update --remote
+      git checkout -b "${{ inputs.parent_branch_for_update }}-${{ inputs.branch }}"
+      git commit -am "updating submodules"
+      git push --set-upstream --force origin "${{ inputs.parent_branch_for_update }}-${{ inputs.branch }}"
+
+  - name: Create pull request against target branch
+    uses: actions/github-script@v5
+    with:
+      github-token: ${{ inputs.github_token }}
+      script: |
+        await github.rest.pulls.create({
+          owner: '${{ inputs.owner }}',
+          repo: '${{ inputs.parent_repository }}'.split('/')[1].trim(),
+          head: "${{ inputs.parent_branch_for_update }}-${{ inputs.branch }}",
+          base: '${{ inputs.pr_against_branch }}',
+          title: '[Auto-generated] ${{ inputs.pull_request_text }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
+          body: '[Auto-generated] ${{ inputs.pull_request_text }} from ${{ inputs.current_repo }}@${{ inputs.branch }}',
+        });
+    continue-on-error: true
