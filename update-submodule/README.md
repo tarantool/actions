@@ -55,5 +55,4 @@ jobs:
           owner: ${{ env.OWNER }}
           branch: ${{ github.head_ref || github.ref_name }}
           current_repo: "${{ github.repository }}"
-
 ```
