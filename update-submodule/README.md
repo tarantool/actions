@@ -1,18 +1,27 @@
-# GitHub Action: Creates Pull Request when Submodules are Updated
+# GitHub Action: Create Pull Request for Submodule Update
 
-This action updates a submodule of the parent repository in a feature branch and opens a pull request against the main branch.
+This action updates a submodule of the target repository in a feature branch and 
+opens a pull request against the main branch to commit changes.
 
-If there is an open PR already, the action will just update and force-push the branch.
+If there is an open pull request already, the action will just force-push the 
+feature branch.
 
-## Variables
+## Parameters
 
-- `parent_repository` — full name of the repository which has the submodule: `<owner>/<repo>`.
-- `owner` — owner of the parent repository.
-- `checkout_branch` — the base branch in the parent repository.
-- `parent_branch_for_update` — base name for new branches, opened from the base branch in the parent repository.
-- `pr_against_branch` is the branch to open PR against; usually the same as `CHECKOUT_BRANCH`.
-- `pull_request_text` is used as the commit message, PR title, and PR body.
-- `github_token` — GitHub token of a user with `write` permissions in the target (parent) repository. Provide this token as an action secret.
+- `github_token` — the GitHub token of a user with `write` permissions in the 
+  target repository. Provide this token as an action secret.
+- `submodule` - the submodule path to update in the target repository; define a 
+  space-separated list to update a few submodules or leave empty to update all.
+- `repository` — the full name of the target repository: `<owner>/<repo>`.
+- `checkout_branch` — the target repository branch to checkout.
+- `feature_branch` — the target repository feature branch.
+- `pr_against_branch` - the target repository branch to open a pull request 
+  against; usually the same as `checkout_branch`.
+- `pr_title` - the title of the pull request; used as the pull request body 
+  as well.
+- `commit_user` - the user for the commit.
+- `commit_user_email` - the user email for the commit.
+- `commit_message` - the message for the commit.
 
 Example workflow:
 
@@ -27,32 +36,32 @@ on:
     - main
 
 jobs:
-  build:
+  submodule-update:
     name: Submodule update
     runs-on: docker
     env:
-      PARENT_REPOSITORY: 'org/repo'
+      SUBMODULE: 'sm'
+      REPOSITORY: 'org/repo'
       CHECKOUT_BRANCH: 'main'
+      FEATURE_BRANCH: 'update-submodule'
       PR_AGAINST_BRANCH: 'main'
-      PARENT_BRANCH_FOR_UPDATE: 'branch-for-update'
-      PULL_REQUEST_TEXT: 'Update submodule <name> on branch <checkout branch>'
-      OWNER: 'owner'
+      PR_TITLE: 'Update submodule <name> on branch <checkout branch>'
+      COMMIT_USER: SomeBot
+      COMMIT_USER_EMAIL: bot@example.com
+      COMMIT_MESSAGE: Bump submodule to new version
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
-      - name: run action
-        id: run_action
+      - name: Create PR with submodule update
         uses: tarantool/actions/update-submodule@master
         with:
-          github_token: ${{ secrets.PARENT_REPO_TOKEN }}
-          parent_repository: ${{ env.PARENT_REPOSITORY }}
+          github_token: ${{ secrets.GH_TOKEN }}
+          submodule: ${{ env.SUBMODULE }}
+          repository: ${{ env.REPOSITORY }}
           checkout_branch: ${{ env.CHECKOUT_BRANCH }}
+          feature_branch: ${{ env.FEATURE_BRANCH }}
           pr_against_branch: ${{ env.PR_AGAINST_BRANCH }}
-          parent_branch_for_update: ${{ env.PARENT_BRANCH_FOR_UPDATE }}
-          pull_request_text: ${{ env.PULL_REQUEST_TEXT }}
-          owner: ${{ env.OWNER }}
-          branch: ${{ github.head_ref || github.ref_name }}
-          current_repo: "${{ github.repository }}"
+          pr_title: ${{ env.PR_TITLE }}
+          commit_user: ${{ env.COMMIT_USER }}
+          commit_user_email: ${{ env.COMMIT_USER_EMAIL }}
+          commit_message: ${{ env.COMMIT_MESSAGE }}
 ```
