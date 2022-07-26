@@ -60,36 +60,36 @@ inputs:
 runs:
   using: composite
   steps:
-  - name: Checkout the target repository
-    uses: actions/checkout@v2
-    with:
-      token: ${{ inputs.github_token }}
-      repository: ${{ inputs.repository }}
-      ref: ${{ inputs.checkout_branch }}
-      submodules: true
-      fetch-depth: 0
+    - name: Checkout the target repository
+      uses: actions/checkout@v2
+      with:
+        token: ${{ inputs.github_token }}
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.checkout_branch }}
+        submodules: true
+        fetch-depth: 0
 
-  - name: Create the new branch and push changes
-    shell: bash
-    run: |
-      git config user.name ${{ inputs.commit_user }}
-      git config user.email ${{ inputs.commit_user_email }}
-      git submodule update --remote ${{ inputs.submodule }}
-      git checkout -b "${{ inputs.feature_branch }}"
-      git commit -am "${{ inputs.commit_message }}"
-      git push --set-upstream --force origin "${{ inputs.feature_branch }}"
+    - name: Create the new branch and push changes
+      shell: bash
+      run: |
+        git config user.name ${{ inputs.commit_user }}
+        git config user.email ${{ inputs.commit_user_email }}
+        git submodule update --remote ${{ inputs.submodule }}
+        git checkout -b "${{ inputs.feature_branch }}"
+        git commit -am "${{ inputs.commit_message }}"
+        git push --set-upstream --force origin "${{ inputs.feature_branch }}"
 
-  - name: Create a pull request against the main branch
-    uses: actions/github-script@v5
-    with:
-      github-token: ${{ inputs.github_token }}
-      script: |
-        await github.rest.pulls.create({
-          owner: '${{ inputs.repository }}'.split('/')[0].trim(),
-          repo: '${{ inputs.repository }}'.split('/')[1].trim(),
-          head: '${{ inputs.feature_branch }}',
-          base: '${{ inputs.pr_against_branch }}',
-          title: '${{ inputs.pr_title }}',
-          body: '${{ inputs.pr_title }}',
-        });
-    continue-on-error: true
+    - name: Create a pull request against the main branch
+      uses: actions/github-script@v5
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          await github.rest.pulls.create({
+            owner: '${{ inputs.repository }}'.split('/')[0].trim(),
+            repo: '${{ inputs.repository }}'.split('/')[1].trim(),
+            head: '${{ inputs.feature_branch }}',
+            base: '${{ inputs.pr_against_branch }}',
+            title: '${{ inputs.pr_title }}',
+            body: '${{ inputs.pr_title }}',
+          });
+      continue-on-error: true
