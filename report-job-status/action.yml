@@ -1,0 +1,75 @@
+name: 'Report failed job to VK Team chat'
+description: 'This action composes a message about the failed job and sends it to VK Teams chat'
+
+inputs:
+  api-url:
+    description: 'Bot API URL'
+    required: true
+  bot-token:
+    description: 'Bot token'
+    required: true
+  chat-id:
+    description: 'Notification chat ID (or stamp from chat URL)'
+    required: true
+  job-steps:
+    description: 'Info about steps that have been run in the job'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Compose message about job failure
+      id: compose-message
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const steps = ${{ inputs.job-steps }}
+          const event = "${{ github.event_name }}"
+          const headRef = "${{ github.head_ref }}"
+          const ref = "${{ github.ref }}"
+          let branch = ""
+          let failedSteps = ""
+          let failedStepsMsg = "---------------- Failed steps info -------------------"
+          let baseUrl = "https://github.com"
+          
+          if (event == "pull_request") {
+            branch = headRef
+          } else {
+            branch = ref.split("/")[2]
+          }
+          
+          // Commit message must be wrapped into backticks because it can be a multiline 
+          commitString = `${{ github.event.head_commit.message }}`.split("\n")[0]
+          
+          Object.keys(steps).forEach(function(key) {
+            if (steps[key]["conclusion"] == "failure") {
+              failedSteps += "\n" + String(key) + ": " + JSON.stringify(steps[key])
+            }
+          })
+          if (failedSteps != "") {
+            failedStepsMsg += failedSteps
+          } else {
+            failedStepsMsg = ""
+          }
+          
+          let message = `🔴 Job failed:
+          <b>Job</b>: <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.job }}</a>
+          <b>Commit</b>: <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+          <b>Branch</b>: <a href="${baseUrl}/${{ github.repository }}/tree/${branch}">${branch}</a>
+          <b>History</b>: <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
+          <b>Triggered on</b>: ${event}
+          <b>Committer</b>: ${{ github.actor }}
+          <b>Commit message subject</b>: ${commitString}
+          <code>
+          ${failedStepsMsg}
+          </code>`
+          return message
+        result-encoding: string
+
+    - name: Send message
+      uses: dasshit/myteam-notify@1.4
+      with:
+        api-url: ${{ inputs.api-url }}
+        bot-token: ${{ inputs.bot-token }}
+        chat-id: ${{ inputs.chat-id }}
+        msg-text: ${{ steps.compose-message.outputs.result }}
