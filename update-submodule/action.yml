@@ -40,10 +40,13 @@ inputs:
       Usually the same as `checkout_branch`
     required: true
   pr_title:
-    description: >
-      The title of the pull request. Used as the pull request body as well
+    description: 'The title of the pull request'
     required: false
     default: '[Auto-generated] Update submodule'
+  pr_description:
+    description: 'The description of the pull request'
+    required: false
+    default: 'Update submodule.'
   commit_user:
     description: 'The user for the commit'
     default: 'TarantoolBot'
@@ -90,6 +93,6 @@ runs:
             head: '${{ inputs.feature_branch }}',
             base: '${{ inputs.pr_against_branch }}',
             title: '${{ inputs.pr_title }}',
-            body: '${{ inputs.pr_title }}',
+            body: '${{ inputs.pr_description }}',
           });
       continue-on-error: true
