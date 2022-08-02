@@ -16,13 +16,6 @@ inputs:
       The GitHub token of a user with `write` permissions in the target
       repository. Provide this token as an action secret
     required: true
-  submodule:
-    description: >
-      The submodule path to update in the target repository.
-      Define a space-separated list to update a few submodules or leave empty
-      to update all
-    required: false
-    default: ''
   repository:
     description: 'The full name of the target repository: <owner>/<repo>'
     required: true
@@ -34,6 +27,14 @@ inputs:
     description: 'The target repository feature branch'
     required: false
     default: 'bot/update-submodule'
+  submodule:
+    description: 'The submodule path to update in the target repository'
+    required: true
+  update_to:
+    description: >
+      The git ref to update the submodule to (branch, tag, or commit SHA)
+    required: false
+    default: 'master'
   pr_against_branch:
     description: >
       The target repository branch to open a pull request against.
@@ -76,12 +77,17 @@ runs:
     - name: Create the new branch and push changes
       shell: bash
       run: |
+        pushd ${{ inputs.submodule }}
+        git fetch origin ${{ inputs.update_to }}
+        git checkout ${{ inputs.update_to }}
+        popd
+
         git config user.name ${{ inputs.commit_user }}
         git config user.email ${{ inputs.commit_user_email }}
-        git submodule update --remote ${{ inputs.submodule }}
+
         git checkout -b "${{ inputs.feature_branch }}"
         git commit -am "${{ inputs.commit_message }}"
-        git push --set-upstream --force origin "${{ inputs.feature_branch }}"
+        git push --force origin "${{ inputs.feature_branch }}"
 
     - name: Create a pull request against the main branch
       uses: actions/github-script@v5
