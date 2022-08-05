@@ -52,7 +52,7 @@ runs:
             failedStepsMsg = ""
           }
           
-          let message = `🔴 Job failed:
+          let message = `🔴 Job failed at <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>:
           <b>Job</b>: <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.job }}</a>
           <b>Commit</b>: <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
           <b>Branch</b>: <a href="${baseUrl}/${{ github.repository }}/tree/${branch}">${branch}</a>
