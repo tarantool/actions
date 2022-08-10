@@ -12,8 +12,11 @@ inputs:
     description: 'Notification chat ID (or stamp from chat URL)'
     required: true
   job-steps:
-    description: 'Info about steps that have been run in the job'
+    description: >
+      Info about steps in JSON format that have been run in the job.
+      It must be always `ToJson(steps)` expression if you provide steps info
     required: false
+    default: '{}'
 
 runs:
   using: 'composite'

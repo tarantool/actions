@@ -30,7 +30,7 @@ steps:
 
 # Usage
 
-All the fields are required.
+Add the following code to the running steps:
 
 ```yaml
   - name: Send VK Teams notification
