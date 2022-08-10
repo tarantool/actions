@@ -1,12 +1,12 @@
-# GitHub Action: report failed job to VK Team chat
+# GitHub Action: report failed job to VK Teams chat
 
-This action composes a message about the failed job and sends it to VK Teams chat.
-The message contains the following information:
+This action composes a message about the failed job and sends it to the 
+specified VK Teams chat. The message contains the following information:
 
 * __Job__: name of the failed job with the link to this job
 * __Commit__: hash of the commit that triggered the job with the link to this commit
 * __Branch__: name of the branch with the link to this branch
-* __History__: the link to commit history
+* __History__: link to the commit history
 * __Triggered on__: name of the event that triggered the job 
 * __Committer__: GitHub login of the commit author
 * __Commit message subject__: first line of the commit message

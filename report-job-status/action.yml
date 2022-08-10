@@ -1,5 +1,7 @@
-name: 'Report failed job to VK Team chat'
-description: 'This action composes a message about the failed job and sends it to VK Teams chat'
+name: 'Report failed job to VK Teams chat'
+description: >
+  This action composes a message about the failed job and sends it to
+  the specified VK Teams chat
 
 inputs:
   api-url:
