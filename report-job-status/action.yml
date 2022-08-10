@@ -63,9 +63,7 @@ runs:
           <b>Triggered on</b>: ${event}
           <b>Committer</b>: ${{ github.actor }}
           <b>Commit message subject</b>: ${commitString}
-          <code>
-          ${failedStepsMsg}
-          </code>`
+          <code>${failedStepsMsg}</code>`
           return message
         result-encoding: string
 
