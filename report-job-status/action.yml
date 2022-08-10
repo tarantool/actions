@@ -31,21 +31,27 @@ runs:
           const steps = ${{ inputs.job-steps }}
           const event = "${{ github.event_name }}"
           const headRef = "${{ github.head_ref }}"
-          const ref = "${{ github.ref }}"
-          let branch = ""
+          const refType = "${{ github.ref_type }}"
+          const refName = "${{ github.ref_name }}"
+
+          let refTypeUrlPart = ""
           let failedSteps = ""
           let failedStepsMsg = "---------------- Failed steps info -------------------"
           let baseUrl = "https://github.com"
-          
+
           if (event == "pull_request") {
-            branch = headRef
+            refTypeUrlPart = headRef
           } else {
-            branch = ref.split("/")[2]
+            if (refType == "branch") {
+              refTypeUrlPart = "tree/" + refName
+            } else {
+              refTypeUrlPart = "releases/tag/" + refName
+            }
           }
-          
+
           // Commit message must be wrapped into backticks because it can be a multiline 
           commitString = `${{ github.event.head_commit.message }}`.split("\n")[0]
-          
+
           Object.keys(steps).forEach(function(key) {
             if (steps[key]["conclusion"] == "failure") {
               failedSteps += "\n" + String(key) + ": " + JSON.stringify(steps[key])
@@ -60,7 +66,7 @@ runs:
           let message = `🔴 Job failed at <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>:
           <b>Job</b>: <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.job }}</a>
           <b>Commit</b>: <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
-          <b>Branch</b>: <a href="${baseUrl}/${{ github.repository }}/tree/${branch}">${branch}</a>
+          <b>${refType[0].toUpperCase()}${refType.slice(1)}</b>: <a href="${baseUrl}/${{ github.repository }}/${refTypeUrlPart}">${refName}</a>
           <b>History</b>: <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
           <b>Triggered on</b>: ${event}
           <b>Committer</b>: ${{ github.actor }}
