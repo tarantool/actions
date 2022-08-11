@@ -24,6 +24,14 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Prepare commit message
+      id: prepare-commit-msg
+      run: echo "::set-output name=commit-msg::${COMMIT_MSG//'`'/<BACKTICK>}"
+      env:
+        COMMIT_MSG: |
+          ${{ github.event.head_commit.message }}
+      shell: bash
+
     - name: Compose message about job failure
       id: compose-message
       uses: actions/github-script@v6
@@ -50,8 +58,11 @@ runs:
             }
           }
 
-          // Commit message must be wrapped into backticks because it can be a multiline 
-          commitString = `${{ github.event.head_commit.message }}`.split("\n")[0]
+          // Commit message must be wrapped into backticks because it can be
+          // a multiline.
+          commitString = `${{ steps.prepare-commit-msg.outputs.commit-msg }}`
+            .split("\n")[0]
+            .replaceAll("<BACKTICK>", "`")
 
           Object.keys(steps).forEach(function(key) {
             if (steps[key]["conclusion"] == "failure") {
