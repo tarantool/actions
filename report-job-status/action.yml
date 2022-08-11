@@ -5,13 +5,14 @@ description: >
 
 inputs:
   api-url:
-    description: 'Bot API URL'
-    required: true
+    description: Bot API URL
+    required: false
+    default: 'https://api.internal.myteam.mail.ru/bot/v1/'
   bot-token:
-    description: 'Bot token'
+    description: Bot token
     required: true
   chat-id:
-    description: 'Notification chat ID (or stamp from chat URL)'
+    description: Notification chat ID (or stamp from chat URL)
     required: true
   job-steps:
     description: >
@@ -21,7 +22,7 @@ inputs:
     default: '{}'
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
     - name: Compose message about job failure
       id: compose-message
@@ -54,7 +55,8 @@ runs:
 
           Object.keys(steps).forEach(function(key) {
             if (steps[key]["conclusion"] == "failure") {
-              failedSteps += "\n" + String(key) + ": " + JSON.stringify(steps[key])
+              failedSteps += "\n" + String(key) + ": " + 
+                JSON.stringify(steps[key])
             }
           })
           if (failedSteps != "") {
