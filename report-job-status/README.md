@@ -51,4 +51,3 @@ Add the following code to the running steps:
 | bot-token | API token received from Metabot | 000.1234567890.0987654321:1111111111 |                            
 | chat-id   | Can be found in the chat info   | @tntcore_ghaction_chat               |
 | job-steps | Must be `${{ ToJson(steps) }}`  | ${{ ToJson(steps) }}                 |
-
