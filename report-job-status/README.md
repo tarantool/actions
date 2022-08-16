@@ -32,6 +32,8 @@ steps:
 
 # Usage
 
+## Basic usage
+
 Add the following code to the running steps:
 
 ```yaml
@@ -39,7 +41,6 @@ Add the following code to the running steps:
     if: failure()
     uses: tarantool/actions/report-job-status@master
     with:
-      api-url: ${{ secrets.VKTEAMS_BOT_API }}
       bot-token: ${{ secrets.VKTEAMS_BOT_TOKEN }}
       chat-id: ${{ secrets.VKTEAMS_CHAT_ID }}
       job-steps: ${{ ToJson(steps) }}
@@ -50,3 +51,20 @@ Add the following code to the running steps:
 | bot-token | API token received from Metabot | 000.1234567890.0987654321:1111111111 |                            
 | chat-id   | Can be found in the chat info   | @tntcore_ghaction_chat               |
 | job-steps | Must be `${{ ToJson(steps) }}`  | ${{ ToJson(steps) }}                 |
+
+## Usage with matrix strategy
+
+In workflows with matrix strategy, jobs have names with matrix options.
+Action cannot get this name from GitHub API but needs it to produce
+a direct link to job logs.
+Provide this name in the `job-name` input variable:
+
+```yaml
+- name: Send VK Teams notification
+  if: failure()
+  uses: tarantool/actions/report-job-status@master
+  with:
+    bot-token: ${{ secrets.VKTEAMS_BOT_TOKEN }}
+    chat-id: ${{ secrets.VKTEAMS_CHAT_ID }}
+    job-name: "${{ github.job }} (${{ matrix.foo }})"
+```
