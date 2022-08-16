@@ -37,20 +37,24 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          const baseUrl = "https://github.com"
+          const eventName = "${{ github.event_name }}"
+          const eventNumber = "${{ github.event.number }}"
           const steps = ${{ inputs.job-steps }}
-          const event = "${{ github.event_name }}"
-          const headRef = "${{ github.head_ref }}"
-          const refType = "${{ github.ref_type }}"
-          const refName = "${{ github.ref_name }}"
 
+          let refName = ""
+          let refType = ""
           let refTypeUrlPart = ""
           let failedSteps = ""
-          let failedStepsMsg = "---------------- Failed steps info -------------------"
-          let baseUrl = "https://github.com"
+          let failedStepsMsg = ""
 
-          if (event == "pull_request") {
-            refTypeUrlPart = headRef
+          if (eventName == "pull_request") {
+            refName = "#" + eventNumber
+            refType = "pull request"
+            refTypeUrlPart = "pull/" + eventNumber
           } else {
+            refName = "${{ github.ref_name }}"
+            refType = "${{ github.ref_type }}"
             if (refType == "branch") {
               refTypeUrlPart = "tree/" + refName
             } else {
@@ -71,9 +75,8 @@ runs:
             }
           })
           if (failedSteps != "") {
+            failedStepsMsg = "--------------- Failed steps info ---------------"
             failedStepsMsg += failedSteps
-          } else {
-            failedStepsMsg = ""
           }
           
           let message = `🔴 Job failed at <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>:
@@ -81,7 +84,7 @@ runs:
           <b>Commit</b>: <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
           <b>${refType[0].toUpperCase()}${refType.slice(1)}</b>: <a href="${baseUrl}/${{ github.repository }}/${refTypeUrlPart}">${refName}</a>
           <b>History</b>: <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
-          <b>Triggered on</b>: ${event}
+          <b>Triggered on</b>: ${eventName}
           <b>Committer</b>: ${{ github.actor }}${commitString ? `\n<b>Commit message subject</b>: ${commitString}` : ""}
           <code>${failedStepsMsg}</code>`
           return message
