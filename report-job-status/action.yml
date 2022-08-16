@@ -20,6 +20,14 @@ inputs:
       It must be always `ToJson(steps)` expression if you provide steps info
     required: false
     default: '{}'
+  job-name:
+    description: >
+      Full job name with matrix combinations. For example, job `test` with
+      matrix options `foo='a'` and `bar='b'` will be named `test (a, b)`.
+      This is required for finding exact job IDs of matrix jobs.
+      These IDs are later used to build direct links to job logs.
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -32,6 +40,25 @@ runs:
           ${{ github.event.head_commit.message }}
       shell: bash
 
+    - name: Get job data
+      shell: bash
+      env:
+        CURL_COMMAND: |-
+          curl --location \
+            --fail \
+            --silent \
+            --show-error \
+            --retry 5 \
+            --retry-delay 5
+        API_ROOT: >-
+          https://api.github.com/repos/${{ github.repository }}/actions/runs
+      run: |
+        echo 'Fetching job data'
+        echo 'JOB_CONTEXT<<EOF' >> $GITHUB_ENV
+        ${{ env.CURL_COMMAND }} -H 'authorization: Bearer ${{ github.token }}' \
+          ${{ env.API_ROOT }}/${{ github.run_id }}/jobs >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
     - name: Compose message about job failure
       id: compose-message
       uses: actions/github-script@v6
@@ -40,14 +67,18 @@ runs:
           const baseUrl = "https://github.com"
           const eventName = "${{ github.event_name }}"
           const eventNumber = "${{ github.event.number }}"
+          const failedJobName = "${{ inputs.job-name }}" || "${{ github.job }}"
           const steps = ${{ inputs.job-steps }}
+          const jobContext = ${{ env.JOB_CONTEXT }}
 
           let refName = ""
           let refType = ""
           let refTypeUrlPart = ""
           let failedSteps = ""
           let failedStepsMsg = ""
-
+          let jobId = ""
+          let jobIdMsg = ""
+          
           if (eventName == "pull_request") {
             refName = "#" + eventNumber
             refType = "pull request"
@@ -74,18 +105,38 @@ runs:
                 JSON.stringify(steps[key])
             }
           })
+          
+          // Try to find the job ID by its name.
+          // In matrix workflows it will work only if exact name was provided
+          // in `job-name` input.
+          for (job of jobContext.jobs) {
+            if (job.name == failedJobName) {
+              jobId = job.id
+              break
+            }
+          } 
+          if (jobId != "") {
+            jobIdMsg = `<b>Job:</b> <a href="${baseUrl}/${{ github.repository }}/runs/${jobId}?\
+            check_suite_focus=true">${failedJobName}</a>, attempt #${{ github.run_attempt }}`
+          } else {
+            jobIdMsg = `<b>Job:</b> ${failedJobName}, attempt #${{ github.run_attempt }}`
+          }
+
           if (failedSteps != "") {
             failedStepsMsg = "--------------- Failed steps info ---------------"
             failedStepsMsg += failedSteps
           }
           
-          let message = `🔴 Job failed at <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>:
-          <b>Job</b>: <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.job }}</a>
-          <b>Commit</b>: <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+          let message = `🔴 FAIL
+          ${jobIdMsg}
+          <b>Workflow:</b> <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.workflow }}</a>
+          <b>Repo:</b> <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>
           <b>${refType[0].toUpperCase()}${refType.slice(1)}</b>: <a href="${baseUrl}/${{ github.repository }}/${refTypeUrlPart}">${refName}</a>
-          <b>History</b>: <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
+          <b>Commit:</b> <a href="${baseUrl}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+          <b>History:</b> <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
           <b>Triggered on</b>: ${eventName}
-          <b>Committer</b>: ${{ github.actor }}${commitString ? `\n<b>Commit message subject</b>: ${commitString}` : ""}
+          <b>Committer:</b> <a href="https://github.com/${{ github.actor }}">${{ github.actor }}</a>\
+          ${commitString ? `\n<b>Commit message subject:</b> ${commitString}` : ""}
           <code>${failedStepsMsg}</code>`
           return message
         result-encoding: string
