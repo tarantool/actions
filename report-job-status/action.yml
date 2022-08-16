@@ -82,8 +82,7 @@ runs:
           <b>${refType[0].toUpperCase()}${refType.slice(1)}</b>: <a href="${baseUrl}/${{ github.repository }}/${refTypeUrlPart}">${refName}</a>
           <b>History</b>: <a href="${baseUrl}/${{ github.repository }}/commits/${{ github.sha }}">commits</a>
           <b>Triggered on</b>: ${event}
-          <b>Committer</b>: ${{ github.actor }}
-          <b>Commit message subject</b>: ${commitString}
+          <b>Committer</b>: ${{ github.actor }}${commitString ? `\n<b>Commit message subject</b>: ${commitString}` : ""}
           <code>${failedStepsMsg}</code>`
           return message
         result-encoding: string
