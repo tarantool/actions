@@ -28,7 +28,6 @@ steps:
   - name: This step does some other useful work
     id: other-useful-work
     uses: some/additional/action@v1.0
-    run: other useful work
 ```
 
 # Usage
