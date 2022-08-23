@@ -105,7 +105,7 @@ runs:
                 JSON.stringify(steps[key])
             }
           })
-          
+
           // Try to find the job ID by its name.
           // In matrix workflows it will work only if exact name was provided
           // in `job-name` input.
@@ -116,8 +116,7 @@ runs:
             }
           } 
           if (jobId != "") {
-            jobIdMsg = `<b>Job:</b> <a href="${baseUrl}/${{ github.repository }}/runs/${jobId}?\
-            check_suite_focus=true">${failedJobName}</a>, attempt #${{ github.run_attempt }}`
+            jobIdMsg = `<b>Job:</b> <a href="${baseUrl}/${{ github.repository }}/runs/${jobId}?check_suite_focus=true">${failedJobName}</a>, attempt #${{ github.run_attempt }}`
           } else {
             jobIdMsg = `<b>Job:</b> ${failedJobName}, attempt #${{ github.run_attempt }}`
           }
