@@ -1,11 +1,37 @@
----
-name: 'Clean workspace'
-description: 'Clean workspace directory after previous workflow run'
+name: Clean up workspace directory
+description: Clean up workspace directory after previous job run
+
+inputs:
+  sudo:
+    description: Run commands with `sudo`
+    default: 'true'
+    required: false
+  chown:
+    description: >
+      Change ownership of all files in workspace directory to $(id -u):$(id -g)
+    default: 'true'
+    required: false
+  rm:
+    description: Remove all contents in workspace directory
+    default: 'true'
+    required: false
+
 runs:
-  using: 'composite'
+  using: composite
   steps:
-    - run: |
-        set -e
+    - if: inputs.sudo == 'true'
+      run: echo "SUDO_CMD=sudo" | tee -a ${GITHUB_ENV}
+      shell: bash
+
+    - name: Change ownership of all files in workspace directory
+      if: inputs.chown == 'true'
+      run: >
+        ${{ env.SUDO_CMD }} chown -R $(id -u):$(id -g) ${{ github.workspace }}/*
+      shell: bash
+
+    - name: Remove all contents in workspace directory
+      if: inputs.rm == 'true'
+      run: |
         shopt -s dotglob
-        rm -rf ${{ github.workspace }}/*
+        ${{ env.SUDO_CMD }} rm -rf ${{ github.workspace }}/*
       shell: bash
