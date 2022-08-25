@@ -7,5 +7,6 @@ runs:
     - run: |
         set -e
         shopt -s dotglob
-        rm -rf ${{ github.workspace }}/*
+        whoami
+        rm -rfv ${{ github.workspace }}/*
       shell: bash
