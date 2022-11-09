@@ -1,0 +1,14 @@
+---
+name: Test the checkout action
+
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+  test-checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: tarantool/actions/checkout@nickvolynkin/checkout-action
+      - name: debug
+        run: git show HEAD && git status -s && git branch

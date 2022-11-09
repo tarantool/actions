@@ -1,0 +1,67 @@
+---
+name: 'Checkout'
+description: >
+  Reliably checkout a git repository with submodules.
+  Uses actions/checkout and supports a subset of its input variables:
+  `token`, `fetch-depth` and `submodules`. All other inputs are used with the
+  default values.
+inputs:
+  token:
+    description: > 
+      Personal access token (PAT) used to fetch the repository.
+      Only required for checking out private repositories.
+    required: false
+    default: ${{ github.token }}
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+    default: 1
+  submodules:
+    description: >
+      Whether to checkout submodules: `true` to checkout submodules, `recursive`
+      to recursively checkout submodules, or `false` (default) to only checkout
+      the main repository.
+    default: false
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Checkout
+    uses: actions/checkout@v3
+    id: checkout
+    continue-on-error: true
+    with:
+      token: ${{ inputs.token }}
+      fetch-depth: ${{ inputs.fetch-depth }}
+      submodules: ${{ inputs.submodules }}
+
+  - name: Cleanup workspace
+    if: steps.checkout.outcome != 'success'
+    uses: ./cleanup
+
+  - name: Checkout after cleanup
+    uses: actions/checkout@v3
+    if: steps.checkout.outcome != 'success'
+    with:
+      token: ${{ inputs.token }}
+      fetch-depth: ${{ inputs.fetch-depth }}
+      submodules: ${{ inputs.submodules }}
+
+  # Work-around for https://github.com/actions/checkout/issues/435
+  - name: Update submodules including tags
+    if: inputs.submodules == 'true'
+    run: |
+      pushd tarantool-${{ matrix.tarantool-branch }}
+      git fetch origin --prune --progress \
+        +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+      popd
+    shell: bash
+
+  - name: Recursively update submodules including tags
+    if: inputs.submodules == 'recursive'
+    run: |
+      pushd tarantool-${{ matrix.tarantool-branch }}
+      git submodule update --init --recursive --force
+      git fetch origin --prune --progress --recurse-submodules \
+        +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+      popd
+    shell: bash
