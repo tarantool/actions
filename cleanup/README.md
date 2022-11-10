@@ -1,4 +1,4 @@
-# Setup environment
+# Clean up the workspace
 
 Action cleans workspace directory after previous run. The main reason to add
 this action is [tarantool/tarantool-qa#145](https://github.com/tarantool/tarantool-qa/issues/145). 

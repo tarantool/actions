@@ -1,0 +1,13 @@
+---
+name: 'Prepare workspace for checkout'
+description: 'Prepare workspace for the actions/checkout action'
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        set -e
+        git checkout -f \
+          $(git -c user.name=TarantoolBot -c user.email=bot@tarantool.io \
+            commit-tree $(git hash-object -t tree /dev/null) -m 'Empty commit' \
+            < /dev/null) || :
+      shell: bash
