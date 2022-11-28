@@ -16,7 +16,7 @@ runs:
     # Install virtualenv for current user
     - shell: bash
       run: |
-        if [ -z ~/.local/bin/virtualenv ]; then \
+        if [ ! -f ~/.local/bin/virtualenv ]; then \
           pip install --no-input --disable-pip-version-check --user virtualenv; \
         fi
 
