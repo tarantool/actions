@@ -23,6 +23,7 @@ feature branch.
 - `commit_user_email` — the author's email of the new commit;
   default is `bot@tarantool.io`.
 - `commit_message` — the message for the commit; default is `Update submodule`.
+- `create_pr` — if `true` (default), create a pull request in the target repository.
 - `pr_against_branch` — the target repository branch to open a pull request 
   against; usually the same as `checkout_branch`; default is `master`.
 - `pr_title` — the title of the pull request;
@@ -56,7 +57,8 @@ gitGraph
   commit id:"commit_message" tag:"updates submodule"
 ```
 
-After pushing the branch, the action opens a pull request in the target repository:
+After pushing the branch, if input variable `create_pr` is `true`,
+the action opens a pull request in the target repository:
 
 ```mermaid
 %%{init: { 'gitGraph': {'mainBranchName': 'checkout_branch', 'diagramPadding': 30}} }%%

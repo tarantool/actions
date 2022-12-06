@@ -35,6 +35,10 @@ inputs:
       The git ref to update the submodule to (branch, tag, or commit SHA)
     required: false
     default: 'master'
+  create_pr:
+    description: "Enable or disable creating a pull request"
+    required: false
+    default: 'true'
   pr_against_branch:
     description: >
       The target repository branch to open a pull request against.
@@ -90,6 +94,7 @@ runs:
         git push --force origin "${{ inputs.feature_branch }}"
 
     - name: Create a pull request against the main branch
+      if: inputs.create_pr == "true"
       uses: actions/github-script@v5
       with:
         github-token: ${{ inputs.github_token }}
