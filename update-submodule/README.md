@@ -9,6 +9,7 @@ This action updates a submodule of the parent repository in a feature branch and
  - branch name for updating can be set in variable PARENT_BRANCH_FOR_BRANCH
  - parrent repoitory can be set by secret - ***PARENT_REPOSITORY: '${{ secret.PARENT_REPO }}***
  - variable PARENT_REPO_TOKEN is token with permisson to
+ - if you need to disable creating PR set `create_pr` false
 
 Example workflow:
 

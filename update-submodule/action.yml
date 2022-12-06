@@ -14,6 +14,10 @@ inputs:
     description: 'Branch to checkout'
     required: false
     default: 'master'
+  create_pr:
+    description: "Disable or enable creating PR"
+    required: false
+    default: "true"
   pr_against_branch:
     description: 'Parent branch'
     required: true
@@ -67,6 +71,7 @@ runs:
       git push --set-upstream --force origin "${{ inputs.parent_branch_for_update }}-${{ inputs.branch }}"
 
   - name: Create pull request against target branch
+    if: create_pr == 'true'
     uses: actions/github-script@v5
     with:
       github-token: ${{ inputs.github_token }}
