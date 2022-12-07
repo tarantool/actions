@@ -8,22 +8,70 @@ feature branch.
 
 ## Parameters
 
+- `repository` — the full name of the target repository: `<owner>/<repo>`.
+  This is the repository that has a submodule to update.
 - `github_token` — the GitHub token of a user with `write` permissions in the 
   target repository. Provide this token as an action secret.
-- `submodule` - the submodule path to update in the target repository; define a 
-  space-separated list to update a few submodules or leave empty to update all.
-- `repository` — the full name of the target repository: `<owner>/<repo>`.
-- `checkout_branch` — the target repository branch to checkout.
-- `feature_branch` — the target repository feature branch.
-- `pr_against_branch` - the target repository branch to open a pull request 
-  against; usually the same as `checkout_branch`.
-- `pr_title` - the title of the pull request; used as the pull request body 
-  as well.
-- `commit_user` - the user for the commit.
-- `commit_user_email` - the user email for the commit.
-- `commit_message` - the message for the commit.
+- `checkout_branch` — the target repository branch to make a feature branch from;
+  default is `master`.
+- `feature_branch` — the new feature branch in the target repository; 
+  default is `bot/update-submodule`.
+- `submodule` — the submodule path to update in the target repository.
+- `update_to` — update submodule to this git reference; for reliable results,
+  use `SHA1` or tag.
+- `commit_user` — the author of the new commit; default is `TarantoolBot`.
+- `commit_user_email` — the author's email of the new commit;
+  default is `bot@tarantool.io`.
+- `commit_message` — the message for the commit; default is `Update submodule`.
+- `pr_against_branch` — the target repository branch to open a pull request 
+  against; usually the same as `checkout_branch`; default is `master`.
+- `pr_title` — the title of the pull request;
+  default is `[Auto-generated] Update submodule`.
+- `pr_description` — the description (body) of the pull request.
 
-Example workflow:
+## How it works
+
+First, the action checks out the target repository and makes a `feature_branch`.
+Then it switches the `submodule` to `update_to` reference and makes a commit
+with provided name, email and message.
+Finally, it pushes the branch to the target repository:
+
+<!-- this is a Mermaid diagram, see
+https://mermaid-js.github.io/mermaid/#/gitgraph.
+
+Configuration variables are listed in 
+https://github.com/mermaid-js/mermaid/blob/59fdaa3b534e32437aeb7ac4ade9685511fb6a7e/packages/mermaid/src/defaultConfig.ts#L1129.
+
+Without diagramPadding, diagram's area was too small, so that tag labels
+did not fit in the diagram (at least on Firefox).
+-->
+
+```mermaid
+%%{init: { 'gitGraph': {'mainBranchName': 'checkout_branch', 'diagramPadding': 30}} }%%
+gitGraph
+  commit id:"abc1234"
+  commit id:"def5678"
+  branch feature_branch
+  checkout feature_branch
+  commit id:"commit_message" tag:"updates submodule"
+```
+
+After pushing the branch, the action opens a pull request in the target repository:
+
+```mermaid
+%%{init: { 'gitGraph': {'mainBranchName': 'checkout_branch', 'diagramPadding': 30}} }%%
+
+gitGraph
+  commit id:"abc1234"
+  commit id:"def5678"
+  branch feature_branch
+  checkout feature_branch
+  commit id:"commit_message" tag:"updates submodule"
+  checkout checkout_branch
+  merge feature_branch tag:"new PR"
+```
+
+## Example workflow:
 
 ```yml
 ---
