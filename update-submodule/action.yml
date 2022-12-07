@@ -94,7 +94,7 @@ runs:
         git push --force origin "${{ inputs.feature_branch }}"
 
     - name: Create a pull request against the main branch
-      if: inputs.create_pr == "true"
+      if: inputs.create_pr == 'true'
       uses: actions/github-script@v5
       with:
         github-token: ${{ inputs.github_token }}
