@@ -70,7 +70,7 @@ runs:
   using: composite
   steps:
     - name: Checkout the target repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         token: ${{ inputs.github_token }}
         repository: ${{ inputs.repository }}
@@ -95,7 +95,7 @@ runs:
 
     - name: Create a pull request against the main branch
       if: inputs.create_pr == 'true'
-      uses: actions/github-script@v5
+      uses: actions/github-script@v6
       with:
         github-token: ${{ inputs.github_token }}
         script: |
