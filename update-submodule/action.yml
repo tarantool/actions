@@ -69,6 +69,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Prepare checkout
+      uses: tarantool/actions/prepare-checkout@master
+
     - name: Checkout the target repository
       uses: actions/checkout@v3
       with:
