@@ -30,6 +30,16 @@ feature branch.
   default is `[Auto-generated] Update submodule`.
 - `pr_description` — the description (body) of the pull request.
 
+## Outputs
+
+The action outputs SHA1 hashes of the new commit, created in the target repository:
+
+* `sha` — the full 40-character value. Example: `c5e10dfd6ec566d640e974986b8fbacaf717ae15`.
+* `sha7` — the shortened 7-character value, as often seen on GitHub. Example: `c5e10df`.
+
+To access the output values, assign an id to the step that is using this action.
+Then get the values like this: `${{ steps.<step-id>.outputs.sha }}`.
+
 ## How it works
 
 First, the action checks out the target repository and makes a `feature_branch`.
@@ -103,6 +113,7 @@ jobs:
     steps:
       - name: Create PR with submodule update
         uses: tarantool/actions/update-submodule@master
+        id: submodule-update
         with:
           github_token: ${{ secrets.GH_TOKEN }}
           submodule: ${{ env.SUBMODULE }}
@@ -114,4 +125,9 @@ jobs:
           commit_user: ${{ env.COMMIT_USER }}
           commit_user_email: ${{ env.COMMIT_USER_EMAIL }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+
+      - name: Print SHA1 of the new commit
+        run: |
+          echo 'full: ${{ steps.submodule-update.outputs.sha }}'
+          echo 'short: ${{ steps.submodule-update.outputs.sha7 }}'
 ```
