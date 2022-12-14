@@ -94,7 +94,7 @@ runs:
       run: |
         pushd ${{ inputs.submodule }}
         git fetch origin ${{ inputs.update_to }}
-        git checkout ${{ inputs.update_to }}
+        git checkout FETCH_HEAD
         popd
 
         git config user.name ${{ inputs.commit_user }}
