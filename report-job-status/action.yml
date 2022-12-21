@@ -20,6 +20,12 @@ inputs:
       It must be always `ToJson(steps)` expression if you provide steps info
     required: false
     default: '{}'
+  matrix:
+    description: >
+      Info about the job's matrix context in JSON format.
+      It must always be the `ToJson(matrix)` expression.
+    required: false
+    default: '{}'
   job-name:
     description: >
       Full job name with matrix combinations. For example, job `test` with
@@ -69,6 +75,7 @@ runs:
           const eventNumber = "${{ github.event.number }}"
           const failedJobName = "${{ inputs.job-name }}" || "${{ github.job }}"
           const steps = ${{ inputs.job-steps }}
+          const matrix = ${{ inputs.matrix }}
           const jobContext = ${{ env.JOB_CONTEXT }}
 
           let refName = ""
@@ -76,6 +83,7 @@ runs:
           let refTypeUrlPart = ""
           let failedSteps = ""
           let failedStepsMsg = ""
+          let matrixMsg = ""
           let jobId = ""
           let jobIdMsg = ""
           
@@ -106,6 +114,10 @@ runs:
             }
           })
 
+          Object.keys(matrix).forEach(function(key) {
+            matrixMsg += `<li>${key}: ${matrix[key]}</li>`
+          })
+          
           // Try to find the job ID by its name.
           // In matrix workflows it will work only if exact name was provided
           // in `job-name` input.
@@ -127,7 +139,8 @@ runs:
           }
           
           let message = `🔴 FAIL
-          ${jobIdMsg}
+          ${jobIdMsg}\
+          ${matrixMsg ? `\n<b>Matrix combination:</b><ul>${matrixMsg}</ul>`: ""}
           <b>Workflow:</b> <a href="${baseUrl}/${{ github.repository }}/actions/runs/${{ github.run_id }}">${{ github.workflow }}</a>
           <b>Repo:</b> <a href="${baseUrl}/${{ github.repository }}/">${{ github.repository }}</a>
           <b>${refType[0].toUpperCase()}${refType.slice(1)}</b>: <a href="${baseUrl}/${{ github.repository }}/${refTypeUrlPart}">${refName}</a>
