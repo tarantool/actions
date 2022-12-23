@@ -1,0 +1,36 @@
+name: Remove a git reference via GitHub API
+description: >
+  This action removes a git branch,
+  from a repository on GitHub with an API call.
+  It is a convenient way to remove temporary branches, like
+  those created by `tarantool/actions/update-submodule`.
+  
+  Note: removing tags is not supported yet.
+
+inputs:
+  owner:
+    description: Repository owner
+    required: true
+  repo:
+    description: Repository name
+    required: true
+  ref:
+    description: Git reference to remove
+  token:
+    description: GitHub personal access token (PAT)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Remove reference ${{ inputs.ref }} from ${{ inputs.owner }}/${{ inputs.repo }}
+      uses: actions/github-script@v6
+      continue-on-error: true
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          await github.request('DELETE /repos/{owner}/{repo}/git/refs/heads/{ref}', {
+            owner: "${{ inputs.owner }}",
+            repo: "${{ inputs.repo }}",
+            ref: "${{ inputs.ref }}"
+          })
