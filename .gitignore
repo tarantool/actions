@@ -1,1 +1,4 @@
 .idea
+# various examples of GitHub webhook payloads,
+# used for development
+**/example.json
