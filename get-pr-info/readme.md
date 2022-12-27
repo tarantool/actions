@@ -10,11 +10,9 @@ triggered by `pull_request` events.
 - uses: tarantool/actions/get-pr-info@master
   id: get-pr-info
   with:
-    # Owner of the repository, where the pull request is opened.
-    # When working with repo forks, it is the main repo.
-    owner: ''
-    # Name of the repository, where the pull request is opened.
-    repo: ''
+    # Full name of the repository (<owner>/<repo>), where the pull request is 
+    # opened. When working with repo forks, it is the main repo.
+    repository: ''
     # Number of the pull request.
     pr_number: 42
     # Personal access token (PAT) used to access the GitHub API.
