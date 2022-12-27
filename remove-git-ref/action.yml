@@ -13,6 +13,7 @@ inputs:
     required: true
   ref:
     description: Git reference to remove
+    required: true
   token:
     description: GitHub personal access token (PAT)
     required: true
