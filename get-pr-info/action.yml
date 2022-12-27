@@ -15,7 +15,7 @@ inputs:
     description: GitHub personal access token (PAT)
     required: false
     default: ${{ github.token }}
-  set-env:
+  set_env:
     description: Set environment variables
     required: false
     default: 'true'
@@ -75,7 +75,7 @@ runs:
           return data
 
     - name: Set environment variables
-      if: inputs.set-env == 'true'
+      if: inputs.set_env == 'true'
       shell: bash
       run: |
         echo "BASE_REPO=${{ fromJSON(steps.get-info.outputs.result).base_repo }}" >> $GITHUB_ENV

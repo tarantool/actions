@@ -28,7 +28,7 @@ triggered by `pull_request` events.
     # For details, see the outputs section.
     #
     # Default: 'true'
-    set-env: 'true'
+    set_env: 'true'
 
 - name: Get results as step outputs or env variables
   run: |
@@ -42,7 +42,7 @@ triggered by `pull_request` events.
 The action outputs a number of variables, similar to those in 
 the `github.pull_request` context. They are available as values
 in the `${{ steps.get-pr-info.outputs.* }}` variables and also as
-the environment variables, if `set-env` is set to `true`.
+the environment variables, if `set_env` is set to `true`.
 
 * `base_repo`, `env.BASE_REPO`: owner/name of the main repository, 
   where the pull request is opened.
