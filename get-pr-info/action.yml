@@ -5,11 +5,8 @@ description: >
   triggered by `pull_request` events
 
 inputs:
-  owner:
-    description: Repository owner
-    required: true
-  repo:
-    description: Repository name
+  repository:
+    description: Repository name (<owner>/<repo>)
     required: true
   pr_number:
     description: Pull request number
@@ -52,16 +49,17 @@ runs:
   steps:
     - name: >
         Fetch information about pull request #${{ inputs.pull_request_number }} 
-        in ${{ inputs.owner}}/${{ inputs.repo }}
+        in ${{ inputs.repository }}
       id: get-info
       uses: actions/github-script@v6
       continue-on-error: false
       with:
         github-token: ${{ inputs.token }}
         script: |
+          const fullRepoName = "${{ inputs.repository }}".split("/")
           const response = await github.request('/repos/{owner}/{repo}/pulls/{pr_number}', {
-            owner: "${{ inputs.owner }}",
-            repo: "${{ inputs.repo }}",
+            owner: fullRepoName[0],
+            repo: fullRepoName[1],
             pr_number: "${{ inputs.pr_number }}"
           })
           console.log(response.data)

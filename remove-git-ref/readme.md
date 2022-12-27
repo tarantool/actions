@@ -12,10 +12,8 @@ Note: removing tags is not supported yet.
 ```yaml
 - uses: tarantool/actions/remove-git-ref@master
   with:
-    # Owner of the repository
-    owner: ''
-    # Name of the repository
-    repo: ''
+    # Full name of the repository (<owner>/<repo>)
+    repository: ''
     # Name of the branch to remove, like `example` or `username/example`.
     ref: ''
     # Personal access token (PAT) used to access the GitHub API.
