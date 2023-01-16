@@ -34,7 +34,7 @@ runs:
   steps:
     - name: Prepare commit message
       id: prepare-commit-msg
-      run: echo "::set-output name=commit-msg::${COMMIT_MSG//'`'/<BACKTICK>}"
+      run: echo "commit-msg=${COMMIT_MSG//'`'/<BACKTICK>}" >> $GITHUB_OUTPUT
       env:
         COMMIT_MSG: |
           ${{ github.event.head_commit.message }}
