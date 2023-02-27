@@ -101,6 +101,10 @@ runs:
         git config user.email ${{ inputs.commit_user_email }}
 
         git checkout -b "${{ inputs.feature_branch }}"
+        if [[ $(git status) =~ .*"nothing to commit".* ]]; then 
+          echo "status=nothing-to-commit" >> $GITHUB_OUTPUT
+          exit 0
+        fi
         git commit -am "${{ inputs.commit_message }}"
         git push --force origin "${{ inputs.feature_branch }}"
 
@@ -109,7 +113,8 @@ runs:
         echo "sha7=$(git rev-parse HEAD | head -c 7)" >> $GITHUB_OUTPUT
 
     - name: Create a pull request against the main branch
-      if: inputs.create_pr == 'true'
+      if: inputs.create_pr == 'true' &&
+        steps.create-branch.outputs.status != 'nothing-to-commit'
       uses: actions/github-script@v6
       with:
         github-token: ${{ inputs.github_token }}
