@@ -1,0 +1,45 @@
+name: Check module version
+description: >
+  Сhecks the equality of the version from Lua 
+  module's code and the repository tag that had triggered the workflow.
+  This action is supposed to work on tag push event only.
+
+inputs:
+  module-name:
+    description: Lua module name as when using require() in tarantool
+    required: true
+  version-pre-extraction-hook:
+    description: Lua code executed before extracting the version value from _VERSION variable
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Clone the module
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Setup tarantool
+      uses: tarantool/setup-tarantool@v2
+      with:
+        tarantool-version: '2.10'
+
+    - name: Make rock
+      run: tarantoolctl rocks make
+      shell: bash
+
+    - name: Check package version
+      run: |
+        REPO_TAG=${{ github.ref_name }}
+        MODULE_VERSION=$(tarantool -e "${{ inputs.version-pre-extraction-hook }} print(require('${{ inputs.module-name }}')._VERSION)")
+        echo "Module name is ${{ inputs.module-name }}"
+        echo "Detected version from code is $MODULE_VERSION"
+        echo "Detected repo tag is $REPO_TAG"
+        if [ "$MODULE_VERSION" != "$REPO_TAG" ]; then
+          echo "::error::Version from code and the last repository tag are not equal"
+          echo "::notice::You may have forgotten to update the value in the version.lua file"
+          exit 1
+        fi
+      shell: bash
