@@ -11,6 +11,7 @@ This action is supposed to work on tag push event only.
 - `version-pre-extraction-hook` — the string with Lua code.
   Executed before extracting the version value from _VERSION variable.
   The hook code should not output to STDERR or STDOUT.
+- `rock-make-opts` — the rock make options.
 
 ## Example workflow:
 
@@ -31,6 +32,8 @@ jobs:
           module-name: 'foobar'
           # Lua code that does not output to STDERR or STDOUT.
           version-pre-extraction-hook: '...'
+          # Rock make options, e.g. STATIC_BUILD=ON.
+          rock-make-opts: '...'
 
   package:
     runs-on: ...
