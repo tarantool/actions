@@ -12,6 +12,10 @@ inputs:
     description: Lua code executed before extracting the version value from _VERSION variable
     required: false
     default: ''
+  rock-make-opts:
+    description: Rock make options
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -27,7 +31,7 @@ runs:
         tarantool-version: '2.10'
 
     - name: Make rock
-      run: tarantoolctl rocks make
+      run: tarantoolctl rocks ${{ inputs.rock-make-opts }} make
       shell: bash
 
     - name: Check package version
