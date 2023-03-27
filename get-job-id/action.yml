@@ -1,0 +1,74 @@
+name: Get job ID
+description: Get job ID
+
+inputs:
+  job-name:
+    description: >
+      Full job name with matrix combinations. For example, job `test` with
+      matrix options `foo='a'` and `bar='b'` will be named `test (a, b)`.
+      This is required for finding exact job IDs of matrix jobs.
+    required: false
+    default: ''
+  throw-error:
+    description: True, if the action shoul exit with error if can't get job ID.
+    required: false
+    default: 'false'
+outputs:
+  job-id:
+    description: ID of the current job.
+    value: ${{ steps.save-job-id.outputs.job-id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get job data
+      shell: bash
+      env:
+        CURL_COMMAND: |-
+          curl --location \
+            --fail \
+            --silent \
+            --show-error \
+            --retry 5 \
+            --retry-delay 5
+        API_RUNS: >-
+          https://api.github.com/repos/${{ github.repository }}/actions/runs
+      run: |
+        echo 'Fetching job data'
+        echo 'JOB_CONTEXT<<EOF' >> $GITHUB_ENV
+        ${{ env.CURL_COMMAND }} -H 'authorization: Bearer ${{ github.token }}' \
+          ${{ env.API_RUNS }}/${{ github.run_id }}/jobs >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
+    - name: Get job ID
+      id: get-job-id
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const jobContext = ${{ env.JOB_CONTEXT }}
+          const jobAttempt = ${{ github.run_attempt }}
+          let jobName = "${{ inputs.job-name }}" || "${{ github.job }}"
+          
+          if (jobName == "${{ github.job }} ()") {
+            jobName = "${{ github.job }}"
+          }
+            
+          // Try to find the job ID by its name.
+          // In matrix workflows will work only if exact name was provided
+          // in `job-name` input.
+          for (job of jobContext.jobs) {
+            if (job.name == jobName && job.run_attempt == ${{ github.run_attempt }}) {
+              return job.id
+            }
+          }
+          if (${{ inputs.throw-error }}) {
+            throw new Error('Unable to get job ID')
+          }
+        result-encoding: string
+
+    - name: Save job ID
+      id: save-job-id
+      shell: bash
+      run: |
+        echo 'JOB_ID=${{ steps.get-job-id.outputs.result }}' >> $GITHUB_ENV
+        echo 'job-id=${{ steps.get-job-id.outputs.result }}' >> $GITHUB_OUTPUT

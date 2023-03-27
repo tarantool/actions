@@ -44,23 +44,10 @@ runs:
       shell: bash
 
     - name: Get job data
-      shell: bash
-      env:
-        CURL_COMMAND: |-
-          curl --location \
-            --fail \
-            --silent \
-            --show-error \
-            --retry 5 \
-            --retry-delay 5
-        API_ROOT: >-
-          https://api.github.com/repos/${{ github.repository }}/actions/runs
-      run: |
-        echo 'Fetching job data'
-        echo 'JOB_CONTEXT<<EOF' >> $GITHUB_ENV
-        ${{ env.CURL_COMMAND }} -H 'authorization: Bearer ${{ github.token }}' \
-          ${{ env.API_ROOT }}/${{ github.run_id }}/jobs >> $GITHUB_ENV
-        echo 'EOF' >> $GITHUB_ENV
+      uses: tarantool/actions/get-job-id@master
+      with:
+        job-name: ${{ inputs.job-name }}
+        throw-error: false
 
     - name: Compose message about job failure
       id: compose-message
@@ -72,14 +59,13 @@ runs:
           const eventNumber = "${{ github.event.number }}"
           const failedJobName = "${{ inputs.job-name }}" || "${{ github.job }}"
           const steps = ${{ inputs.job-steps }}
-          const jobContext = ${{ env.JOB_CONTEXT }}
+          const jobId = ${{ env.JOB_ID }}
 
           let refName = ""
           let refType = ""
           let refTypeUrlPart = ""
           let failedSteps = ""
           let failedStepsMsg = ""
-          let jobId = ""
           let jobIdMsg = ""
           
           if (eventName == "pull_request") {
@@ -109,16 +95,7 @@ runs:
             }
           })
 
-          // Try to find the job ID by its name.
-          // In matrix workflows it will work only if exact name was provided
-          // in `job-name` input.
-          for (job of jobContext.jobs) {
-            if (job.name == failedJobName) {
-              jobId = job.id
-              break
-            }
-          } 
-          if (jobId != "") {
+          if (jobId != undefined) {
             jobIdMsg = `<b>Job:</b> <a href="${baseUrl}/${{ github.repository }}/runs/${jobId}?check_suite_focus=true">${failedJobName}</a>, attempt #${{ github.run_attempt }}`
           } else {
             jobIdMsg = `<b>Job:</b> ${failedJobName}, attempt #${{ github.run_attempt }}`
