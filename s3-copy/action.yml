@@ -1,63 +1,60 @@
-name: Copy the files from the runner to the S3 bucket
-description: Copy the files from the runner to the S3 bucket
+name: Upload a local file to S3
+description: This action uploads a local file to S3 via cURL
 
 inputs:
-  s3-access-key-id:
+  access-key-id:
     description: >
-      S3 access key ID. You can find it anytime in the account description
-      (Object storage -> Accounts -> Your account name).
+      The access key ID. You can find it anytime in the account description
+      (Object storage -> Accounts -> Your account name)
     required: true
-  s3-secret-access-key:
+  secret-access-key:
     description: >
-      S3 secret access key. You can see it only at the time you create the
-      account.
+      The secret access key. You can see it only at the time you create the
+      account
     required: true
-  s3-region:
-    description: >
-      The region set in your S3 endpoint. You can find it in the documentation
-      of your S3 storage, i.e.
-      https://mcs.mail.ru/docs/ru/base/s3/quick-start/create-bucket.
-    required: false
-    default: ru-msk
   bucket:
-    description: The name of the S3 bucket.
+    description: The bucket name
     required: true
   source:
-    description: The path to the file or directory you want to save to S3.
+    description: The source file path
     required: true
   destination:
     description: >
-      The path in the bucket with the file name. If you want to store the file
-      in the bucket root, destination must be the file name.
+      The destination file path in the bucket, including the file name
     required: true
   endpoint:
-    description: >
-      The URL of your S3 storage to get the access to the uploaded files without protocol prefix.
+    description: The endpoint URL without protocol prefix
     required: false
     default: hb.bizmrg.com
+  content-type:
+    description: The content type for the content being uploaded
+    required: false
+    default: application/x-compressed-tar
 
 runs:
   using: composite
   steps:
-    - name: Upload the file to S3 if the input file exists
+    - name: Upload the file to S3
       shell: bash
       run: |
-        if [[ ! -e ${{ inputs.source }} ]]; then
-          exit 0
+        if [ ! -f ${{ inputs.source }} ]; then 
+            echo "Source file doesn't exist or is not a regular file"
+            exit 1
         fi
         
-        bucket=${{ inputs.bucket }}
-        contentType="application/x-compressed-tar"
-        dateValue=`date -R`
-        resource=${{ inputs.destination }}
-        stringToSign="PUT\n\n${contentType}\n${dateValue}\n/${bucket}/${resource}"
-        s3Key='${{ inputs.s3-access-key-id }}'
-        s3Secret='${{ inputs.s3-secret-access-key }}'
-        signature=`echo -en ${stringToSign} | openssl sha1 -hmac ${s3Secret} -binary | base64`
+        keyID="${{ inputs.access-key-id }}"
+        secretKey="${{ inputs.secret-access-key }}"
+        bucket="${{ inputs.bucket }}"
+        destination="${{ inputs.destination }}"
+        endpoint="${{ inputs.endpoint }}"
+        contentType="${{ inputs.content-type }}"
+        dateValue="$(date -R)"
+        stringToSign="PUT\n\n${contentType}\n${dateValue}\n/${bucket}/${destination}"
+        signature="$(echo -en ${stringToSign} | openssl sha1 -hmac ${secretKey} -binary | base64)"
         
         curl -X PUT -T "${{ inputs.source }}" \
-          -H "Host: ${bucket}.hb.bizmrg.com" \
+          -H "Host: ${bucket}.${endpoint}" \
           -H "Date: ${dateValue}" \
           -H "Content-Type: ${contentType}" \
-          -H "Authorization: AWS ${s3Key}:${signature}" \
-          https://${bucket}.hb.bizmrg.com/${resource}
+          -H "Authorization: AWS ${keyID}:${signature}" \
+          -f https://${bucket}.${endpoint}/${destination}
