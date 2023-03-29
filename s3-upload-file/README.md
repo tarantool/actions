@@ -20,7 +20,7 @@ This action uploads a local file to S3 via cURL.
 
 ```YAML
 - name: Upload local file
-  uses: tarantool/actions/s3-copy@master
+  uses: tarantool/actions/s3-upload-file@master
   with:
     access-key-id: ${{ secrets.MY_KEY_ID }} 
     secret-access-key: ${{ secrets.MY_SECRET_KEY }}
