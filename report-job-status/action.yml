@@ -24,8 +24,8 @@ inputs:
     description: >
       Full job name with matrix combinations. For example, job `test` with
       matrix options `foo='a'` and `bar='b'` will be named `test (a, b)`.
-      This is required for finding exact job IDs of matrix jobs.
-      These IDs are later used to build direct links to job logs.
+      This is required for finding exact job IDs of matrix jobs. These IDs 
+      are later used to build direct links to job logs
     required: false
     default: ''
 
@@ -43,7 +43,7 @@ runs:
           ${{ github.event.head_commit.message }}
       shell: bash
 
-    - name: Get job data
+    - name: Get job ID
       uses: tarantool/actions/get-job-id@master
       with:
         job-name: ${{ inputs.job-name }}
@@ -57,9 +57,13 @@ runs:
           const baseUrl = "https://github.com"
           const eventName = "${{ github.event_name }}"
           const eventNumber = "${{ github.event.number }}"
-          const failedJobName = "${{ inputs.job-name }}" || "${{ github.job }}"
           const steps = ${{ inputs.job-steps }}
           const jobId = ${{ env.JOB_ID }}
+
+          let failedJobName = "${{ inputs.job-name }}" || "${{ github.job }}"
+          if (failedJobName.endsWith(" ()")) {
+            failedJobName = failedJobName.replace(" ()", "")
+          }
 
           let refName = ""
           let refType = ""
