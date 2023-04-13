@@ -1,30 +1,33 @@
-name: Get job ID
-description: Get job ID
+name: Get ID of the current workflow job
+description: >
+  This action returns ID of the current workflow job by the given job name
 
 inputs:
   job-name:
     description: >
       Full job name with matrix combinations. For example, job `test` with
       matrix options `foo='a'` and `bar='b'` will be named `test (a, b)`.
-      This is required for finding exact job IDs of matrix jobs.
+      This is required for finding exact job IDs of matrix jobs
     required: false
     default: ''
   throw-error:
-    description: True, if the action shoul exit with error if can't get job ID.
+    description: >
+      Throw an error if the action couldn't retrieve job ID by the given 
+      job name
     required: false
     default: 'false'
 outputs:
   job-id:
-    description: ID of the current job.
+    description: ID of the current workflow job
     value: ${{ steps.save-job-id.outputs.job-id }}
 
 runs:
   using: composite
   steps:
-    - name: Get job data
+    - name: Get jobs data
       shell: bash
       run: |
-        echo 'Fetching job data'
+        echo 'Fetching jobs data'
         echo 'JOB_CONTEXT<<EOF' >> $GITHUB_ENV
         curl --location \
           --fail \
@@ -43,8 +46,8 @@ runs:
         script: |
           const jobContext = ${{ env.JOB_CONTEXT }}
           const jobAttempt = ${{ github.run_attempt }}
+
           let jobName = "${{ inputs.job-name }}" || "${{ github.job }}"
-          
           if (jobName == "${{ github.job }} ()") {
             jobName = "${{ github.job }}"
           }
@@ -57,8 +60,9 @@ runs:
               return job.id
             }
           }
+
           if (${{ inputs.throw-error }}) {
-            throw new Error('Unable to get job ID')
+            throw new Error('Unable to retrieve job ID by provided job name')
           }
         result-encoding: string
 

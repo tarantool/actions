@@ -1,29 +1,32 @@
-# GitHub Action: get the current job ID
+# GitHub Action: get ID of the current workflow job
 
-There are several situations when we need the Job ID, but the GitHub
-doesn't give the context with the Job ID. This action gets the Job ID
-from the jobs' context (info about all the jobs in the run) with job
-name and run attempt. 
+There are some situations when we need to get ID of the current workflow job,
+but GitHub doesn't provide us with any context to do it. This action returns
+ID of the current workflow job by the given job name.
 
-The result will be saved in the environmental variable `JOB_ID` and as
-the action output `job-id`.
+The result will be saved in the environment variable `JOB_ID` and in the action
+output as `job-id`.
 
 # Usage
+
 ```yaml
     - name: Get job ID
+      id: get-job-id
       uses: tarantool/actions/get-job-id@master
       with:
         job-name: ${{ github.job }} (${{ join(matrix.*, ', ') }})
 
     - name: Use job ID
-      run: echo ${{ env.JOB_ID }}
+      run: |
+        echo ${{ env.JOB_ID }}
+        echo ${{ steps.get-job-id.outputs.job-id }}
 ```
 
 # Parameters
-This action uses the only one parameter - `job-name`. You should set this
-parameter if your workflow uses matrix strategy. Don't worry if one of the
-parameters is the empty string: the action will remove empty brackets from
-the job name.
 
-If the `job-name` is empty, the action will use ${{ github.job }} to find the
+You should provide the `job-name` parameter if your workflow uses the matrix
+strategy. Don't worry if you provide the name as `foobar ()`: the action will 
+remove empty brackets from the job name.
+
+If the `job-name` is empty, the action will use `${{ github.job }}` to find the
 job ID.
