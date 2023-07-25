@@ -1,0 +1,51 @@
+name: Dokku deploy action
+description: Deploy to a Dokku host using GitHub Actions
+inputs:
+  ssh-private-key:
+    description: >
+      The private ssh key used for Dokku deployments. Never use as plain text!
+      Configure it as a secret in your repository by navigating to
+      https://github.com/USERNAME/REPO/settings/secrets.
+      ATTENTION, your private key must *not* have a passphrase
+    required: true
+  ssh-port:
+    description: Port for ssh host. If not specified, `22` will be used
+    required: false
+    default: 22
+  dokku-user:
+    description: The user to login into the Dokku host. If not specified, "dokku" user will be used
+    required: false
+    default: dokku
+  dokku-host:
+    description: The Dokku host to deploy to
+    required: true
+  dokku-app-name:
+    description: The Dokku app name to be deployed
+    required: true
+  git-remote-branch:
+    description: >
+      The Dokku remote branch to push your branch to. If not specified, `master` will be used
+    required: false
+    default: master
+  git-push-flags:
+    description: >
+      Additional flags to be passed to the git push command. For example, it could be used
+      for force push
+    required: false
+  git-ref:
+    description: >
+      Branch, tag or commit SHA to deploy. If not specified, `$GITHUB_SHA` (current commit)
+      will be used
+    required: false
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.ssh-private-key }}
+    - ${{ inputs.ssh-port }}
+    - ${{ inputs.dokku-user }}
+    - ${{ inputs.dokku-host }}
+    - ${{ inputs.dokku-app-name }}
+    - ${{ inputs.git-remote-branch }}
+    - ${{ inputs.git-push-flags }}
+    - ${{ inputs.git-ref }}
