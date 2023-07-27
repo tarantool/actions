@@ -13,7 +13,7 @@ This action uploads a local file to S3 via cURL.
 | bucket            | The bucket name                                                               | my-bucket               | True     | -                            |
 | source            | The source file path                                                          | my/file/path.txt        | True     | -                            |
 | destination       | The destination file path in the bucket, including the file name              | my/directory            | True     | -                            |
-| endpoint          | The endpoint URL without protocol prefix                                      | amazon.com              | False    | hb.bizmrg.com                |
+| endpoint          | The endpoint URL without protocol prefix                                      | amazon.com              | False    | hb.vkcs.cloud                |
 | content-type      | The content type for the content being uploaded                               | application/x-zip       | False    | application/x-compressed-tar |
 
 ## Example

@@ -25,7 +25,7 @@ inputs:
   endpoint:
     description: The endpoint URL without protocol prefix
     required: false
-    default: hb.bizmrg.com
+    default: hb.vkcs.cloud
   content-type:
     description: The content type for the content being uploaded
     required: false
