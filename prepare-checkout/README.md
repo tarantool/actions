@@ -4,6 +4,20 @@ This action creates and checks out an empty detached commit.
 It helps subsequent [`actions/checkout`](https://github.com/actions/checkout) action
 correctly clean the workspace.
 
+By default, it also deletes stale references associated with `origin`, which
+helps check out the repository without errors like this:
+```
+error: cannot lock ref 'refs/remotes/origin/<repo>/<branch>': 'refs/remotes/origin/<repo>' exists; cannot create 'refs/remotes/origin/<repo>/<branch>'
+ ! [new branch]        <repo>/<branch> -> origin/<repo>/<branch>  (unable to update local ref)
+```
+
+## Parameters
+
+- `prune` — delete stale references associated with `origin`. This will
+not affect local branches, and it will not change anything remote, but it will
+update the local references to remote branches. Submodules are affected as well.
+Default: `true`.
+
 ## Usage
 
 Add the following line to your workflow before the `actions/checkout` action:

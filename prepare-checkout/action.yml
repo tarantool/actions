@@ -1,9 +1,25 @@
 ---
 name: 'Prepare workspace for checkout'
 description: 'Prepare workspace for the actions/checkout action'
+
+inputs:
+  prune:
+    description: >
+      Delete stale references associated with `origin`. This will not affect
+      local branches, and it will not change anything remote, but it will update
+      the local references to remote branches. Submodules are affected as well
+    required: false
+    default: 'true'
+
 runs:
   using: 'composite'
   steps:
+    - run: >
+        git remote prune origin &&
+        git submodule foreach --recursive 'git remote prune origin' || :
+      if: inputs.prune == 'true'
+      shell: bash
+
     - run: |
         set -e
         git checkout -f \
