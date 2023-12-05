@@ -57,10 +57,25 @@ the repository still stays on that commit. On the next job run,
 `actions/checkout` will run the above code, restore that particular commit,
 and fail to make a proper code checkout.
 
-By creating a detached empty commit, this actions forces `actions/checkout`
+By creating a detached empty commit, this action forces `actions/checkout`
 to clean up the project's workspace entirely, removing any files that could
 break checkout. Meanwhile, the `.git` directory stays intact, so full checkout
-isn't required and the workflow does not waste much time.
+isn't required and the workflow does not waste much time. But sometimes the
+`.git` directory also needs a little cleanup, at least all `index.lock` files
+must be absent when checking out a repo to not encounter the following error:
+
+```bash
+Error: fatal: Unable to create '/<path>/.git/<path>/index.lock': File exists.
+
+Another git process seems to be running in this repository, e.g.
+an editor opened by 'git commit'. Please make sure all processes
+are terminated then try again. If it still fails, a git process
+may have crashed in this repository earlier:
+remove the file manually to continue.
+```
+
+That's why this action also removes all `index.lock` files in the `.git`
+directory to make subsequent checkout successful.
 
 If this is a first job run on a particular runner and there's no repository yet,
 the command in this action will silently fail, thanks to `|| :`,
