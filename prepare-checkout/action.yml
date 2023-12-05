@@ -27,3 +27,7 @@ runs:
             commit-tree $(git hash-object -t tree /dev/null) -m 'Empty commit' \
             < /dev/null) || :
       shell: bash
+
+    - run: >
+        find .git -type f -name 'index.lock' -delete || :
+      shell: bash
