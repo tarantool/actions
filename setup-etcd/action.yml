@@ -1,0 +1,61 @@
+name: Setup etcd
+description: Set up an etcd store from a release archive
+
+inputs:
+  version:
+    description: Release archive version (for example, v3.5.10)
+    required: false
+    default: v3.5.12
+  platform:
+    description: Release archive platform (amd64 or arm64)
+    required: false
+    default: amd64
+  install-prefix:
+    description: Release archive installation directory
+    required: false
+    default: ${{ github.workspace }}/.etcd/bin/
+
+runs:
+  using: composite
+  steps:
+    - name: Download and extract release archive
+      run: |
+        set -eux
+        rm -rf ${ETCD_INSTALL_PREFIX} && mkdir -p ${ETCD_INSTALL_PREFIX}
+        OS_NAME="$(uname | tr '[:upper:]' '[:lower:]')"
+        FILE_NAME="etcd-${ETCD_VERSION}-${OS_NAME}-${ETCD_PLATFORM}"
+        if [ "${OS_NAME}" == "linux" ]; then
+          curl -L ${ETCD_RELEASES_URL}/${ETCD_VERSION}/${FILE_NAME}.tar.gz \
+            -o ${ETCD_INSTALL_PREFIX}/${FILE_NAME}.tar.gz
+          tar -xvzf ${ETCD_INSTALL_PREFIX}/${FILE_NAME}.tar.gz \
+            -C ${ETCD_INSTALL_PREFIX} --strip-components=1
+        elif [ "${OS_NAME}" == "darwin" ]; then
+          curl -L ${ETCD_RELEASES_URL}/${ETCD_VERSION}/${FILE_NAME}.zip \
+            -o ${ETCD_INSTALL_PREFIX}/${FILE_NAME}.zip
+          unzip ${ETCD_INSTALL_PREFIX}/${FILE_NAME}.zip \
+            -d ${ETCD_INSTALL_PREFIX}
+          ln -s ${ETCD_INSTALL_PREFIX}/${FILE_NAME}/etcd \
+            ${ETCD_INSTALL_PREFIX}/etcd
+          ln -s ${ETCD_INSTALL_PREFIX}/${FILE_NAME}/etcdctl \
+            ${ETCD_INSTALL_PREFIX}/etcdctl
+        else
+          echo "Unsupported OS: ${OS_NAME}"
+          exit 1
+        fi
+      env:
+        ETCD_RELEASES_URL: https://github.com/etcd-io/etcd/releases/download
+        ETCD_VERSION: ${{ inputs.version }}
+        ETCD_PLATFORM: ${{ inputs.platform }}
+        ETCD_INSTALL_PREFIX: ${{ inputs.install-prefix }}
+      shell: bash
+
+    - name: Check binaries and add installation prefix to $GITHUB_ENV
+      run: |
+        set -eux
+        ${ETCD_INSTALL_PREFIX}/etcd --version
+        ${ETCD_INSTALL_PREFIX}/etcdctl version 2>/dev/null || \
+          ${ETCD_INSTALL_PREFIX}/etcdctl --version
+        echo "ETCD_PATH=${ETCD_INSTALL_PREFIX}" >> $GITHUB_ENV
+      env:
+        ETCD_INSTALL_PREFIX: ${{ inputs.install-prefix }}
+      shell: bash
