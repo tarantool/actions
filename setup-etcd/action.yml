@@ -18,7 +18,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Cache etcd binaries
+      id: cache-etcd-binaries
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.install-prefix }}
+        key: etcd-binaries-${{ runner.os }}-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.install-prefix }}-v1
+
     - name: Download and extract release archive
+      if: steps.cache-etcd-binaries.outputs.cache-hit != 'true'
       run: |
         set -eux
         rm -rf ${ETCD_INSTALL_PREFIX} && mkdir -p ${ETCD_INSTALL_PREFIX}
