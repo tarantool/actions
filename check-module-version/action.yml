@@ -21,12 +21,12 @@ runs:
   using: composite
   steps:
     - name: Clone the module
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
     - name: Setup tarantool
-      uses: tarantool/setup-tarantool@v2
+      uses: tarantool/setup-tarantool@v3
       with:
         tarantool-version: '2.10'
 
