@@ -1,6 +1,6 @@
 name: Check module version
 description: >
-  Сhecks the equality of the version from Lua 
+  Checks the equality of the version from Lua
   module's code and the repository tag that had triggered the workflow.
   This action is supposed to work on tag push event only.
 
@@ -16,6 +16,10 @@ inputs:
     description: Rock make options
     required: false
     default: ''
+  tarantool-version:
+    description: Tarantool version to be used in action
+    required: false
+    default: '2.10'
 
 runs:
   using: composite
@@ -28,10 +32,17 @@ runs:
     - name: Setup tarantool
       uses: tarantool/setup-tarantool@v3
       with:
-        tarantool-version: '2.10'
+        tarantool-version: ${{ inputs.tarantool-version }}
+
+    - name: Setup tt
+      run: |
+        curl -L https://tarantool.io/XodVosJ/release/3/installer.sh | bash
+        sudo apt install -y tt
+        tt version
+      shell: bash
 
     - name: Make rock
-      run: tarantoolctl rocks ${{ inputs.rock-make-opts }} make
+      run: tt rocks ${{ inputs.rock-make-opts }} make
       shell: bash
 
     - name: Check package version
