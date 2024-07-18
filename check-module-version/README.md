@@ -1,6 +1,6 @@
 # GitHub Action: Check module version
 
-This action checks the equality of the version from Lua 
+This action checks the equality of the version from Lua
 module's code and the repository tag that had triggered the workflow.
 This action is supposed to work on tag push event only.
 
@@ -12,6 +12,8 @@ This action is supposed to work on tag push event only.
   Executed before extracting the version value from _VERSION variable.
   The hook code should not output to STDERR or STDOUT.
 - `rock-make-opts` — the rock make options.
+- `tarantool-version` - version of tarantool to be used in action.
+  Default is `2.10`.
 
 ## Example workflow:
 
@@ -34,6 +36,9 @@ jobs:
           version-pre-extraction-hook: '...'
           # Rock make options, e.g. STATIC_BUILD=ON.
           rock-make-opts: '...'
+          # Tarantool version to be used in action.
+          # Default is '2.10'.
+          tarantool-version: '3.1'
 
   package:
     runs-on: ...
