@@ -1,6 +1,6 @@
 name: Check module version
 description: >
-  Сhecks the equality of the version from Lua 
+  Сhecks the equality of the version from Lua
   module's code and the repository tag that had triggered the workflow.
   This action is supposed to work on tag push event only.
 
@@ -28,7 +28,7 @@ runs:
     - name: Setup tarantool
       uses: tarantool/setup-tarantool@v3
       with:
-        tarantool-version: '2.10'
+        tarantool-version: '2.11'
 
     - name: Make rock
       run: tarantoolctl rocks ${{ inputs.rock-make-opts }} make
